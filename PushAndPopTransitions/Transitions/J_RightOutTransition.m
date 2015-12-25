@@ -9,7 +9,7 @@
 #import "J_RightOutTransition.h"
 
 
-@interface J_RightOutTransition() //<UIGestureRecognizerDelegate>
+@interface J_RightOutTransition() <UIGestureRecognizerDelegate>
 {
     __weak id<UIViewControllerContextTransitioning> transitionContext;
     
@@ -106,6 +106,91 @@ static  NSTimeInterval const  duringTime =0.25;
     [blackShadowView removeFromSuperview];
     [transitionContext completeTransition:![transitionContext transitionWasCancelled]];
 }
+
+
+
+
+
+#pragma mark - ------------手势相关------
+///绑定一个手势
+-(void)bindPanGestureWithView:(UIView *)view WithBeginBlock:(void(^)())block;
+{
+    navContoller = (UIViewController *)[view nextResponder];
+    
+    
+    UIScreenEdgePanGestureRecognizer * screenEdgepanGesture = [[UIScreenEdgePanGestureRecognizer alloc]initWithTarget:self action:@selector(panBack:)];
+    
+    screenEdgepanGesture.edges = UIRectEdgeLeft;
+    
+    
+    screenEdgepanGesture.delegate = self;
+    
+    self.beginBlock = block;
+    
+    [view addGestureRecognizer:screenEdgepanGesture];
+    
+}
+
+-(void)panBack:(UIScreenEdgePanGestureRecognizer *)pan
+{
+    
+    UIView * view = pan.view;
+    switch (pan.state) {
+        case UIGestureRecognizerStateBegan:
+        {
+            panBegin = YES;
+            
+            if (!self.beginBlock) {
+                [NSException exceptionWithName:@"missing Block" reason:@"Block is require here" userInfo:nil];
+            }
+            
+            self.beginBlock();
+            
+            return;
+        }
+        case UIGestureRecognizerStateChanged:
+        {
+            CGFloat translation = [pan translationInView:view].x;
+            
+            CGFloat presenter = translation/CGRectGetWidth(view.bounds);
+            
+            [self updateInteractiveTransition:presenter];
+            return;
+        }
+        case UIGestureRecognizerStateEnded:
+        {
+            panBegin = NO;
+            
+            if ([pan velocityInView:view].x>0 ) {
+                [self finishInteractiveTransition];
+            }else{
+                [self cancelInteractiveTransition];
+            }
+            return;
+        }
+            break;
+            
+        default:
+            break;
+    }
+}
+
+-(id)getTransition
+{
+    return  panBegin?self:nil;
+}
+
+
+#pragma mark -  gestureRecognizer delegate
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer
+{
+    if ([navContoller isKindOfClass:[UINavigationController class]]&&((UINavigationController *)navContoller).viewControllers.count>1) {
+        return NO;
+    }
+    
+    return YES;
+}
+
 
 
 

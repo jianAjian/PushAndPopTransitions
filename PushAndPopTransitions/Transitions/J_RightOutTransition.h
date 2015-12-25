@@ -7,6 +7,18 @@
 //
 #import <UIKit/UIKit.h>
 
-@interface J_RightOutTransition : NSObject<UIViewControllerAnimatedTransitioning>
+@interface J_RightOutTransition : UIPercentDrivenInteractiveTransition<UIViewControllerAnimatedTransitioning>
+
+
+
+@property (nonatomic,copy) void(^beginBlock)() ;
+
+
+///绑定一个手势
+-(void)bindPanGestureWithView:(UIView *)view WithBeginBlock:(void(^)())block;
+
+
+-(id)getTransition;
+
 
 @end

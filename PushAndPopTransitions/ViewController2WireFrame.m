@@ -19,6 +19,8 @@
 
 @property (nonatomic,weak) UIViewController  * presentVC;
 
+@property (nonatomic,strong) J_RightOutTransition  * rightOutTransition ;
+
 
 @end
 
@@ -32,8 +34,14 @@
     vc2Wiframe.presentVC = viewController;
     vc2.wireframe = vc2Wiframe;
     
-    
     vc2.transitioningDelegate = vc2Wiframe;
+    __weak ViewController2WireFrame * weakVCWireframe = vc2Wiframe;
+    
+    [vc2Wiframe.rightOutTransition bindPanGestureWithView:vc2.view WithBeginBlock:^{
+        __strong ViewController2WireFrame * strongVCWireframe =  weakVCWireframe;
+        [strongVCWireframe dismiss];
+    }];
+    
     [viewController presentViewController:vc2 animated:YES completion:NULL];
     
 }
@@ -53,8 +61,28 @@
 
 - (nullable id <UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed
 {
-    return [[J_RightOutTransition alloc]init];
+    return  self.rightOutTransition;
 }
+
+- (nullable id <UIViewControllerInteractiveTransitioning>)interactionControllerForDismissal:(id <UIViewControllerAnimatedTransitioning>)animator
+{
+    return [self.rightOutTransition getTransition];
+}
+
+
+#pragma mark - setter && getter 
+
+-(J_RightOutTransition *)rightOutTransition{
+    
+    if (_rightOutTransition) {
+        return _rightOutTransition;
+    }
+    
+    _rightOutTransition = [[J_RightOutTransition alloc]init];
+    
+    return _rightOutTransition;
+}
+
 
 
 @end
